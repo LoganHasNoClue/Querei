@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import datetime
 from typing import AsyncIterator
 
 from core.config import get_settings
@@ -66,10 +67,14 @@ def _format_error(exc: BaseException) -> str:
     return f"{type(exc).__name__}: {exc}"
 
 _WEB_CAPABILITY = (
-    "You are Querei, a capable, friendly AI assistant. You can answer general "
-    "questions and you have a web_search tool to browse the public web for "
-    "current information — use it whenever a question benefits from up-to-date or "
-    "factual web info, and cite the sources you used. "
+    "You are Querei, a capable, friendly AI assistant. You have a web_search tool "
+    "that returns web pages together with their text CONTENT. When you use it, "
+    "READ the returned content and ANSWER THE USER'S QUESTION DIRECTLY with the "
+    "specific names, numbers and facts they asked for — do NOT merely list or "
+    "describe the source websites. Weave in citations, but the answer comes first. "
+    "If the fetched content does not actually contain the answer, say so honestly "
+    "and give your best general guidance. Never present a date from your training "
+    "data as if it were the current date. "
 )
 
 SYSTEM_WITHOUT_CORPUS = (
@@ -174,8 +179,15 @@ async def stream_chat(messages: list[dict], corpus_enabled: bool) -> AsyncIterat
             sources = await asyncio.to_thread(
                 web_search, args.get("query", ""), int(args.get("k", 6) or 6)
             )
-            # Drive the "browsing the web" animation with the real sites found.
-            await out.put({"type": "web_sources", "sources": sources})
+            # UI only needs the source chips — send a light payload (no content).
+            await out.put({
+                "type": "web_sources",
+                "sources": [
+                    {"title": s["title"], "url": s["url"], "domain": s["domain"]}
+                    for s in sources
+                ],
+            })
+            # The model gets the full payload incl. fetched page content to answer.
             return json.dumps(sources, ensure_ascii=False)
         if toolset is not None:
             result = await toolset.call(name, args)
@@ -193,7 +205,8 @@ async def stream_chat(messages: list[dict], corpus_enabled: bool) -> AsyncIterat
     async def drive(toolset):
         # web_search is always offered; corpus tools only when connected.
         tools = [WEB_SEARCH_TOOL] + (toolset.tools if toolset else [])
-        system = SYSTEM_WITH_CORPUS if toolset else SYSTEM_WITHOUT_CORPUS
+        base = SYSTEM_WITH_CORPUS if toolset else SYSTEM_WITHOUT_CORPUS
+        system = f"Today's date is {datetime.now():%A, %B %-d, %Y}. " + base
         convo = list(messages)
         for _ in range(MAX_TOOL_ROUNDS):
             tool_calls = await turn(convo, tools, system)
