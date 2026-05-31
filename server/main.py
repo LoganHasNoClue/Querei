@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import json
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
@@ -22,6 +23,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Endpoints reachable without the password (so the UI can show the gate).
+_OPEN_PATHS = {"/api/health", "/api/config"}
+
+
+@app.middleware("http")
+async def password_gate(request: Request, call_next):
+    """If APP_PASSWORD is set, every /api call must carry it in X-Querei-Auth.
+    Protects API spend on a public deploy. No password set = open (local dev)."""
+    pw = settings.app_password
+    path = request.url.path
+    if pw and path.startswith("/api") and path not in _OPEN_PATHS:
+        if request.headers.get("x-querei-auth") != pw:
+            return JSONResponse({"detail": "unauthorized"}, status_code=401)
+    return await call_next(request)
+
+
+@app.on_event("startup")
+def _ensure_index():
+    """Build the vector index on first boot if the corpus is present but not yet
+    embedded (e.g. fresh container with no persisted Chroma disk)."""
+    try:
+        index = get_index()
+        if index.count() > 0 and index.store.count() == 0:
+            print(f"Warming up index for {index.count()} videos…")
+            index.reindex()
+    except Exception as exc:  # never block startup
+        print(f"Index warmup skipped: {exc}")
 
 # Serve raw assets (thumbnails) referenced by `thumbnail_path`, e.g.
 # data/sample/thumbs/vid_001.svg -> GET /files/data/sample/thumbs/vid_001.svg
@@ -41,6 +70,18 @@ class ChatRequest(BaseModel):
 @app.get("/api/health")
 def health():
     return {"ok": True, "provider": settings.llm_provider}
+
+
+@app.get("/api/config")
+def config():
+    """Public: tells the UI whether to show the password gate."""
+    return {"auth_required": bool(settings.app_password)}
+
+
+@app.get("/api/auth")
+def auth():
+    """Gated by the middleware — a 200 here means the password was correct."""
+    return {"ok": True}
 
 
 @app.get("/api/corpus/stats")

@@ -21,13 +21,13 @@ web/dist/
 # ===== macOS =====
 .DS_Store
 
-# ===== Built / operator data (NOT committed; the sample corpus IS committed) =====
-# Your downloaded videos, their thumbnails, the built corpus + vector index all
-# stay local. Only the small committed sample corpus ships in the repo.
+# ===== Built data =====
+# Raw source videos and the vector index stay OUT of git (videos are large /
+# private; the Chroma index is rebuilt automatically on first boot from
+# descriptions.json). The corpus metadata + thumbnails ARE tracked so the
+# private repo can deploy your videos to the hosted site.
 data/raw/
-data/thumbs/
 data/chroma/
-data/descriptions.json
 
 # Keep the committed sample corpus + its thumbnails:
 !data/sample/

@@ -1,0 +1,24 @@
+# Render Blueprint — one-click deploy of Querei.
+# In Render: New → Blueprint → connect the LoganHasNoClue/Querei repo. Render
+# builds the Dockerfile and runs the service. Set the three secret values
+# (marked sync:false) in the dashboard when prompted.
+services:
+  - type: web
+    name: querei
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: LLM_PROVIDER
+        value: openai
+      - key: EMBEDDING_PROVIDER
+        value: openai
+      - key: VISUAL_ANALYZER
+        value: gemini
+      # --- secrets: set these in the Render dashboard, not in this file ---
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: APP_PASSWORD # the shared password judges will type
+        sync: false

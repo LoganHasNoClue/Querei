@@ -38,8 +38,31 @@ export type StreamEvent =
   | { type: "done" }
   | { type: "error"; message: string };
 
+// --- Auth (shared-password gate, only active when the server requires it) ---
+const AUTH_KEY = "querei_pw";
+export const getPassword = () => localStorage.getItem(AUTH_KEY) ?? "";
+export const setPassword = (pw: string) => localStorage.setItem(AUTH_KEY, pw);
+const authHeaders = (): Record<string, string> => {
+  const pw = getPassword();
+  return pw ? { "X-Querei-Auth": pw } : {};
+};
+
+export async function fetchAuthRequired(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/config");
+    return res.ok ? (await res.json()).auth_required === true : false;
+  } catch {
+    return false;
+  }
+}
+
+export async function verifyPassword(pw: string): Promise<boolean> {
+  const res = await fetch("/api/auth", { headers: { "X-Querei-Auth": pw } });
+  return res.ok;
+}
+
 export async function fetchCorpusStats(): Promise<CorpusStats> {
-  const res = await fetch("/api/corpus/stats");
+  const res = await fetch("/api/corpus/stats", { headers: authHeaders() });
   if (!res.ok) throw new Error("Failed to load corpus stats");
   return res.json();
 }
@@ -52,7 +75,7 @@ export async function* streamChat(
 ): AsyncGenerator<StreamEvent> {
   const res = await fetch("/api/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify({ messages, corpus_enabled: corpusEnabled }),
     signal,
   });

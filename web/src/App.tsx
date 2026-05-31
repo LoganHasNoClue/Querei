@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  fetchAuthRequired,
   fetchCorpusStats,
+  getPassword,
+  setPassword,
   streamChat,
+  verifyPassword,
   type ChatTurn,
   type CorpusStats,
   type Match,
@@ -26,12 +30,21 @@ export default function App() {
   const [corpusEnabled, setCorpusEnabled] = useState(false);
   const [stats, setStats] = useState<CorpusStats | null>(null);
   const [streaming, setStreaming] = useState(false);
+  const [authState, setAuthState] = useState<"checking" | "locked" | "open">("checking");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Fetched only to know whether a corpus is connected — count is not shown.
-    fetchCorpusStats().then(setStats).catch(() => setStats(null));
+    (async () => {
+      if (!(await fetchAuthRequired())) return setAuthState("open");
+      const pw = getPassword();
+      setAuthState(pw && (await verifyPassword(pw)) ? "open" : "locked");
+    })();
   }, []);
+
+  useEffect(() => {
+    // Fetched only to know whether a corpus is connected — count is not shown.
+    if (authState === "open") fetchCorpusStats().then(setStats).catch(() => setStats(null));
+  }, [authState]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -101,6 +114,15 @@ export default function App() {
   }
 
   const newChat = () => !streaming && setMessages([]);
+
+  if (authState === "checking")
+    return (
+      <>
+        <div className="aurora" />
+      </>
+    );
+  if (authState === "locked")
+    return <Gate onUnlock={() => setAuthState("open")} />;
 
   return (
     <>
@@ -174,6 +196,57 @@ export default function App() {
             </button>
           </form>
         </div>
+      </div>
+    </>
+  );
+}
+
+// Shared-password gate shown only when the server requires one (public deploy).
+function Gate({ onUnlock }: { onUnlock: () => void }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setErr(false);
+    if (await verifyPassword(pw)) {
+      setPassword(pw);
+      onUnlock();
+    } else {
+      setErr(true);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="aurora" />
+      <div className="relative z-10 grid h-full place-items-center px-4">
+        <form onSubmit={submit} className="w-full max-w-sm text-center">
+          <div className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
+            <div className="h-4 w-4 rounded-full border-2 border-glow" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Querei</h1>
+          <p className="mt-1 text-sm text-zinc-500">Enter the access password to continue.</p>
+          <input
+            type="password"
+            autoFocus
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            placeholder="Password"
+            className="mt-5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-[15px] outline-none focus:border-glow/50"
+          />
+          {err && <p className="mt-2 text-xs text-red-400">Incorrect password.</p>}
+          <button
+            type="submit"
+            disabled={busy || !pw}
+            className="mt-3 w-full rounded-xl bg-glow py-3 text-sm font-semibold text-white transition disabled:opacity-30"
+          >
+            {busy ? "Checking…" : "Unlock"}
+          </button>
+        </form>
       </div>
     </>
   );

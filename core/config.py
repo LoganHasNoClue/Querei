@@ -72,6 +72,9 @@ class Settings(BaseSettings):
 
     # --- Server ---
     cors_origins: str = "*"
+    # Optional shared password gate for a public deploy. Empty = no gate (local
+    # dev). When set, every /api call (except health/config) must send it.
+    app_password: str = ""
 
     @property
     def active_corpus_file(self) -> Path:
