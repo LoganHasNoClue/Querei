@@ -158,6 +158,11 @@ class CorpusIndex:
                 caption=self.records[vid].caption,
                 description=_short_description(self.records[vid]),
                 thumbnail_path=self.records[vid].thumbnail_path,
+                video_path=(
+                    f"data/raw/{self.records[vid].source_file}"
+                    if self.records[vid].source_file
+                    else None
+                ),
                 source_url=self.records[vid].source_url,
             )
             for vid, score in top_matches

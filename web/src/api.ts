@@ -7,6 +7,7 @@ export interface Match {
   caption?: string;
   description?: string;
   thumbnail_path?: string;
+  video_path?: string;
   source_url?: string;
   reason?: string;
 }

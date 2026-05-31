@@ -81,5 +81,6 @@ class SearchMatch(BaseModel):
     caption: Optional[str] = None
     description: Optional[str] = None  # short human-readable summary
     thumbnail_path: Optional[str] = None
+    video_path: Optional[str] = None  # servable path to the playable clip, if any
     source_url: Optional[str] = None
     reason: Optional[str] = None  # one-line "why this matched", if synthesized
