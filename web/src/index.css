@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #000000;
+  color: #ededf2;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Purple → magenta → teal aurora glow anchored to the bottom of the viewport,
+   matching the reference UI. Sits behind everything, non-interactive. */
+.aurora {
+  position: fixed;
+  inset: auto 0 -8% 0;
+  height: 42%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(58% 90% at 20% 110%, rgba(139, 92, 246, 0.55), transparent 68%),
+    radial-gradient(52% 85% at 52% 116%, rgba(219, 64, 150, 0.5), transparent 66%),
+    radial-gradient(60% 92% at 86% 110%, rgba(20, 184, 166, 0.45), transparent 70%);
+  filter: blur(34px);
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 7px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #24242c;
+  border-radius: 8px;
+}

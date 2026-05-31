@@ -1,0 +1,34 @@
+# ===== Secrets — NEVER commit =====
+.env
+.env.*
+!.env.example
+
+# ===== Python =====
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# ===== Node / frontend build =====
+web/node_modules/
+web/dist/
+
+# ===== Local agent/editor config =====
+.claude/
+*.log
+
+# ===== macOS =====
+.DS_Store
+
+# ===== Built / operator data (NOT committed; the sample corpus IS committed) =====
+# Your downloaded videos, their thumbnails, the built corpus + vector index all
+# stay local. Only the small committed sample corpus ships in the repo.
+data/raw/
+data/thumbs/
+data/chroma/
+data/descriptions.json
+
+# Keep the committed sample corpus + its thumbnails:
+!data/sample/
+!data/sample/**

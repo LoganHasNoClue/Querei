@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#db2777"/>
+  </linearGradient></defs>
+  <rect width="320" height="180" rx="12" fill="url(#g)"/>
+  <circle cx="160" cy="78" r="26" fill="rgba(255,255,255,0.92)"/>
+  <path d="M152 66 L152 90 L174 78 Z" fill="#7c3aed"/>
+  <text x="160" y="132" font-family="system-ui,Arial" font-size="15" font-weight="700" fill="white" text-anchor="middle">car dance</text>
+  <text x="160" y="154" font-family="system-ui,Arial" font-size="12" fill="rgba(255,255,255,0.85)" text-anchor="middle">@parkinglot_chris</text>
+</svg>

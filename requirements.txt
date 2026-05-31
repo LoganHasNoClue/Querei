@@ -1,0 +1,32 @@
+# --- Aperture backend + pipeline dependencies ---
+# Web/chat backend
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+sse-starlette==2.1.3
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+httpx==0.28.1
+
+# Vector store (local, free, persisted to /data)
+chromadb==0.5.23
+numpy==2.1.3
+
+# Hybrid search: lexical/keyword pass alongside vectors
+rank-bm25==0.2.2
+
+# LLM providers (all three; selected at runtime via LLM_PROVIDER)
+google-genai==1.9.0
+openai==1.59.6
+anthropic==0.42.0
+
+# Model Context Protocol server + client
+mcp==1.2.0
+
+# Ingestion + media
+yt-dlp==2024.12.13
+Pillow==11.0.0
+
+# Web search (free, no API key) — gives the assistant normal "browse the web"
+# ability, available regardless of the corpus toggle.
+ddgs==9.14.4
