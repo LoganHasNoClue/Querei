@@ -9,6 +9,6 @@
 **/__pycache__
 web/node_modules
 web/dist
-data/raw
+data/chroma
 .claude
 .DS_Store

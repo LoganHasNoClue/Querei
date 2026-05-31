@@ -22,11 +22,9 @@ web/dist/
 .DS_Store
 
 # ===== Built data =====
-# Raw source videos and the vector index stay OUT of git (videos are large /
-# private; the Chroma index is rebuilt automatically on first boot from
-# descriptions.json). The corpus metadata + thumbnails ARE tracked so the
-# private repo can deploy your videos to the hosted site.
-data/raw/
+# The Chroma index is rebuilt automatically on first boot from descriptions.json,
+# so it stays out of git. The corpus metadata, thumbnails, AND the video files
+# are tracked so the private repo deploys a fully playable site.
 data/chroma/
 
 # Keep the committed sample corpus + its thumbnails:
