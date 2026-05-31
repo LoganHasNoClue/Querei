@@ -1,0 +1,14 @@
+# Keep the image small and secret-free. NOTE: data/ (the built corpus) IS
+# included so the deployed site has your videos — only the raw source videos
+# and dev cruft are excluded.
+.git
+.venv
+.env
+.env.*
+*.log
+**/__pycache__
+web/node_modules
+web/dist
+data/raw
+.claude
+.DS_Store

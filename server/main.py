@@ -63,3 +63,12 @@ async def chat(req: ChatRequest):
             yield {"data": json.dumps(event, ensure_ascii=False)}
 
     return EventSourceResponse(event_source())
+
+
+# In production (single-service deploy) the backend also serves the built React
+# app, so the whole thing lives on one origin/domain. In local dev this folder
+# doesn't exist and Vite serves the UI instead (proxying /api here). Mounted last
+# so it never shadows the /api routes above.
+_DIST = ROOT / "web" / "dist"
+if _DIST.exists():
+    app.mount("/", StaticFiles(directory=str(_DIST), html=True), name="spa")
